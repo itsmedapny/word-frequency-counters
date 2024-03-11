@@ -5,7 +5,7 @@ body {
     padding: 50px;
 }
 
-/*style the form container */
+
 .container {
     max-width: 800px;
     margin: 15px auto;
@@ -24,7 +24,6 @@ form {
     text-align: center;
 }
 
-/*style form labels and inputs */
 label {
     display: block;
     font-weight: bold;
@@ -45,24 +44,34 @@ h2 {
     color: black;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-li {
-    margin-bottom: 5px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid black;
-    border-radius: 3px;
-}
-
-li:hover {
-    background-color: #e5e5e5;
-}
 
 p {
     text-align: center;
     color: #777;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px; 
+    background-color: #f2f2f2;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+
+tr:first-child {
+    background-color: white; 
+}
+
+tr:not(:first-child) {
+    background-color: #F7F3E9;
+}
+
+.back-button {
+    display: block;
+    margin-top: 20px; 
 }

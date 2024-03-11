@@ -6,84 +6,128 @@
     <title>Word Frequency Analyzer</title>
     <link rel="stylesheet" href="styles2.css">
 </head>
+
 <body>
     <div class="container">
-        <h1>Word Frequency Analyzer Program</h1>
-    <?php
+        <h1>Word Frequency Analyzer</h1>
+ 
+
+     <?php
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        pForm();
+    }
+
+    function pForm() {
         $text = isset($_POST["text"]) ? $_POST["text"] : "";
         $sort = isset($_POST["sort"]) ? $_POST["sort"] : "";
         $limit = isset($_POST["limit"]) ? (int)$_POST["limit"] : 0;
 
-        //check if the input text is empty
+        //check if input text is empty
         if (empty($text)) {
-            echo "<p class='error'>Please enter text.</p>";
-        } else {
-            //check if the input limit is valid
-            if ($limit < 1) {
-                echo "<p class='error'>The limit must be at least 1.</p>";
-            } else {
-                //sanitize and validate the input text
-                $text = filter_var($text, FILTER_SANITIZE_SPECIAL_CHARS);
-                
-                //use a regular expression to allow only letters, numbers, and common punctuation
-                if (!preg_match('/^[a-zA-Z0-9\s.,:;!?]+$/', $text)) {
-                    echo "<p class='error'>Invalid characters in the input. Please use only letters, numbers, and common punctuation.</p>";
-                } else {
-                    //process the input text
-                    $wordCounts = calculateWordFrequencies($text, $sort, $limit);
-
-                    //display the results
-                    if (!empty($wordCounts)) {
-                        echo "<h2>Word Frequencies</h2>";
-                        echo "<ul>";
-                        foreach ($wordCounts as $word => $frequency) {
-                            echo "<li>$word: $frequency</li>";
-                        }
-                        echo "</ul>";
-                    } else {
-                        echo "<p>No words found after processing.</p>";
-                    }
-                }
-            }
+            displayError("Please enter text. Please try again!");
+            return;
         }
 
-         //display a back button to easy to go back in index
-         echo "<a href='index.php' class='back-button'>Back to Home</a>";
+        //check if input limit is valid
+        if ($limit < 1) {
+            displayError("The limit must be at least 1.");
+            return;
+        }
+
+        //sanitize and validate text
+        $text = filter_var($text, FILTER_SANITIZE_SPECIAL_CHARS);
+
+        //use a regular expression to allow only letters, numbers, and common punctuation
+        if (!preg_match('/^[a-zA-Z0-9\s.,:;!?]+$/', $text)) {
+            displayError("Invalid characters in the input. Please use only letters, numbers, and common punctuation.");
+            return;
+        }
+
+        //process input text
+        $stopWords = getStopWords();
+        $wordCounts = calculateWordFrequencies($text, $sort, $limit, $stopWords);
+
+        //display results
+        displayResults($wordCounts);
     }
 
-    //function to calculate word frequencies
-    function calculateWordFrequencies($text, $sort, $limit) {
+    //function error handling
+    function displayError($message) {
+        echo "<p class='error'>$message</p>";
 
-        //define common stop words to filter out
-        $stopWords = ["the", "and", "in", "of", "to", "with", "their", "but", "a", "an", "are", "as", "at", "be", "but", "by", "for", "if", 
-        "into", "is", "it", "no", "not", "on", "or", "such", "that", "then", "there", "these", "they", "this", "to", "was", "will", "with"];
+        //display back button
+        echo "<a href='index.php' class='back-button'>Back to Home</a>";
+    }
 
-        //tokenize the input text into words
-        $words = preg_split('/[\s.,:;]+/', strtolower($text));
+    //function display results
+    function displayResults($wordCounts) {
+    if (!empty($wordCounts)) {
+        echo "<table>";
+        echo "<tr><th>Word</th><th>Number of Frequency</th></tr>";
+        foreach ($wordCounts as $word => $frequency) {
+            echo "<tr><td>$word</td><td>$frequency</td></tr>";
+        }
+        echo "</table>";
+    } else {
+        echo "<p>No words found after processing.</p>";
+    }
 
-        //count word frequencies and filter out stop words
-        $wordCounts = array_diff_assoc(array_count_values($words), array_flip($stopWords));
+    //display back button
+    echo "<a href='index.php' class='back-button'>Back to Home</a>";
 
-        //sort based on the user's choice (ascending or descending order)
+    }
+
+     
+     //function calculate word frequencies
+    function calculateWordFrequencies($text, $sort, $limit, $stopWords) {
+        $words = tokenizeText($text);
+        $wordCounts = countAndFilterWords($words, $stopWords);
+        $sWordCounts = sWordCounts($wordCounts, $sort);
+        $lWordCounts = lWordCounts($sWordCounts, $limit);
+    
+        return $lWordCounts;
+    }
+    
+    //function tokenize the input text into words
+    function tokenizeText($text) {
+        return preg_split('/[\s.,:;]+/', strtolower($text));
+    }
+    
+    //function sorted counts
+    function sWordCounts($wordCounts, $sort) {
         if ($sort == "asc") {
             asort($wordCounts);
         } else {
             arsort($wordCounts);
         }
-
-        //limit the number of displayed words
-        if ($limit > 0) {
-            $wordCounts = array_slice($wordCounts, 0, $limit);
-        }
-
+    
         return $wordCounts;
-
     }
     
-    ?>
+    //function limit the number of displayed words
+    function lWordCounts($wordCounts, $limit) {
+        if ($limit > 0) {
+            return array_slice($wordCounts, 0, $limit);
+        }
+    
+        return $wordCounts;
+    }
+    
+    //function stop words
+    function getStopWords() {
+        return ["the", "and", "in", "of", "to", "with", "their", "but", "a", "an", "are", "as", "at", "be", "but", "by", "for", "if", 
+            "into", "is", "it", "no", "not", "on", "or", "such", "that", "then", "there", "these", "they", "this", "to", "was", "will", "with"]; //common stop words
+    }
+    
+    function countAndFilterWords($words, $stopWords) {
+        $wordCounts = array_diff_assoc(array_count_values($words), array_flip($stopWords));
+        return $wordCounts;
+    }
 
-    </div>
+    ?>
+    
+   </div>
+
 </body>
 </html>
